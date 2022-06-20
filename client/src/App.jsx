@@ -20,11 +20,11 @@ const App = () => {
         <Route path="/" exact>
           <Home />
         </Route>
+        <Route path="/product/:id">
+          <ProductDetail />
+        </Route>
         <Route path="/products/:category">
           <ProductList />
-        </Route>
-        <Route path="/products/:id">
-          <ProductDetail />
         </Route>
         <Route path="/products">
           <ProductList />
