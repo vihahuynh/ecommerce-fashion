@@ -9,7 +9,7 @@ const Home = () => {
     <Layout>
       <Slider />
       <Categories />
-      <Products />
+      <Products filters={{}} />
     </Layout>
   );
 };
