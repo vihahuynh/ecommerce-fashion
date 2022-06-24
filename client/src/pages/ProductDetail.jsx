@@ -145,7 +145,6 @@ const ProductDetail = () => {
       try {
         const res = await publicRequest.get(`products/${productId}`);
         setProduct(res.data);
-        console.log("res.data: ", res.data);
       } catch (err) {}
     };
     getProduct();

@@ -1,10 +1,14 @@
 import styled from "styled-components";
 import Layout from "../components/Layout";
 import { useSelector } from "react-redux";
-
+import { useState, useEffect } from "react";
 import { Add, Remove } from "@material-ui/icons";
-
 import { mobile } from "../responsive";
+import StripeCheckout from "react-stripe-checkout";
+import { userRequest } from "../services/requestMethods";
+import { useHistory } from "react-router-dom";
+
+const KEY = process.env.REACT_APP_STRIPE_KEY;
 
 const Container = styled.div``;
 
@@ -165,7 +169,29 @@ const Button = styled.button`
 `;
 
 const Cart = () => {
+  const history = useHistory();
   const cart = useSelector((state) => state.cart);
+  const [stripeToken, setStripeToken] = useState(null);
+
+  const onToken = (token) => {
+    setStripeToken(token);
+  };
+
+  const totalPayment = cart.total;
+  useEffect(() => {
+    const makeRequest = async () => {
+      try {
+        const res = await userRequest.post("/checkout/payment", {
+          tokenId: stripeToken.id || "",
+          amount: totalPayment,
+        });
+        history.push("/success", { data: res.data });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    stripeToken && totalPayment > 0 && makeRequest();
+  }, [stripeToken, totalPayment, history]);
 
   return (
     <Container>
@@ -183,34 +209,37 @@ const Cart = () => {
           <Bottom>
             <Info>
               {cart.products.map((p) => (
-                <Product key={p._id}>
-                  <ProductDetail>
-                    <Image src={p.img} />
-                    <Details>
-                      <ProductName>
-                        <b>Product: </b>
-                        {p.title}
-                      </ProductName>
-                      <ProductId>
-                        <b>ID: </b>
-                        {p._id}
-                      </ProductId>
-                      <ProductColor color={p.color} />
-                      <ProductSize>
-                        <b>Size: </b>
-                        {p.size}
-                      </ProductSize>
-                    </Details>
-                  </ProductDetail>
-                  <PriceDetail>
-                    <ProductAmountContainer>
-                      <Add />
-                      <ProductAmount>{p.quantity}</ProductAmount>
-                      <Remove />
-                    </ProductAmountContainer>
-                    <ProductPrice>$ {p.price * p.quantity}</ProductPrice>
-                  </PriceDetail>
-                </Product>
+                <div key={p._id}>
+                  <Product>
+                    <ProductDetail>
+                      <Image src={p.img} />
+                      <Details>
+                        <ProductName>
+                          <b>Product: </b>
+                          {p.title}
+                        </ProductName>
+                        <ProductId>
+                          <b>ID: </b>
+                          {p._id}
+                        </ProductId>
+                        <ProductColor color={p.color} />
+                        <ProductSize>
+                          <b>Size: </b>
+                          {p.size}
+                        </ProductSize>
+                      </Details>
+                    </ProductDetail>
+                    <PriceDetail>
+                      <ProductAmountContainer>
+                        <Add />
+                        <ProductAmount>{p.quantity}</ProductAmount>
+                        <Remove />
+                      </ProductAmountContainer>
+                      <ProductPrice>$ {p.price * p.quantity}</ProductPrice>
+                    </PriceDetail>
+                  </Product>
+                  <Hr />
+                </div>
               ))}
             </Info>
             <Summary>
@@ -231,7 +260,19 @@ const Cart = () => {
                 <SummaryItemText>Total</SummaryItemText>
                 <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
               </SummaryItem>
-              <Button>CHECKOUT NOW</Button>
+
+              <StripeCheckout
+                name="Damian & Nemo"
+                image="https://img.freepik.com/free-vector/cute-cat-sitting-cartoon-vector-icon-illustration-animal-nature-icon-concept-isolated-premium-flat_138676-4538.jpg?w=2000"
+                billingAddress
+                shippingAddress
+                description={`Your total is $${cart.total}`}
+                amount={cart.total * 100}
+                token={onToken}
+                stripeKey={KEY}
+              >
+                <Button>CHECKOUT NOW</Button>
+              </StripeCheckout>
             </Summary>
           </Bottom>
         </Wrapper>
