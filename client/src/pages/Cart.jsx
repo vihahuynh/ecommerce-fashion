@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Layout from "../components/Layout";
+import { useSelector } from "react-redux";
 
 import { Add, Remove } from "@material-ui/icons";
 
@@ -89,6 +90,7 @@ const ProductColor = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  border: 1px solid black;
   background-color: ${(props) => props.color};
   ${mobile({ width: "15px", height: "15px" })}
 `;
@@ -163,6 +165,8 @@ const Button = styled.button`
 `;
 
 const Cart = () => {
+  const cart = useSelector((state) => state.cart);
+
   return (
     <Container>
       <Layout>
@@ -171,70 +175,49 @@ const Cart = () => {
           <Top>
             <TopButton>CONTINUE SHOPPING</TopButton>
             <TopTexts>
-              <TopText>Shopping Bag (2)</TopText>
+              <TopText>Shopping Bag ({cart.quantity})</TopText>
               <TopText>Your Wishlist (0)</TopText>
             </TopTexts>
             <TopButton type="filled">CHECKOUT NOW</TopButton>
           </Top>
           <Bottom>
             <Info>
-              <Product>
-                <ProductDetail>
-                  <Image src="https://www.freepnglogos.com/uploads/shoes-png/running-shoes-png-transparent-running-shoes-images-6.png" />
-                  <Details>
-                    <ProductName>
-                      <b>Product: </b>RUNNING SHOES
-                    </ProductName>
-                    <ProductId>
-                      <b>ID: </b>34GW125D22
-                    </ProductId>
-                    <ProductColor color="lightgray" />
-                    <ProductSize>
-                      <b>Size: </b>36.5
-                    </ProductSize>
-                  </Details>
-                </ProductDetail>
-                <PriceDetail>
-                  <ProductAmountContainer>
-                    <Add />
-                    <ProductAmount>2</ProductAmount>
-                    <Remove />
-                  </ProductAmountContainer>
-                  <ProductPrice>$ 40</ProductPrice>
-                </PriceDetail>
-              </Product>
-              <Hr />
-              <Product>
-                <ProductDetail>
-                  <Image src="https://www.pngall.com/wp-content/uploads/12/Beanie-Cap-PNG-Images.png" />
-                  <Details>
-                    <ProductName>
-                      <b>Product: </b>BEANIE
-                    </ProductName>
-                    <ProductId>
-                      <b>ID: </b>34SD97HKW1
-                    </ProductId>
-                    <ProductColor color="darkred" />
-                    <ProductSize>
-                      <b>Size: </b>M
-                    </ProductSize>
-                  </Details>
-                </ProductDetail>
-                <PriceDetail>
-                  <ProductAmountContainer>
-                    <Add />
-                    <ProductAmount>1</ProductAmount>
-                    <Remove />
-                  </ProductAmountContainer>
-                  <ProductPrice>$ 15</ProductPrice>
-                </PriceDetail>
-              </Product>
+              {cart.products.map((p) => (
+                <Product key={p._id}>
+                  <ProductDetail>
+                    <Image src={p.img} />
+                    <Details>
+                      <ProductName>
+                        <b>Product: </b>
+                        {p.title}
+                      </ProductName>
+                      <ProductId>
+                        <b>ID: </b>
+                        {p._id}
+                      </ProductId>
+                      <ProductColor color={p.color} />
+                      <ProductSize>
+                        <b>Size: </b>
+                        {p.size}
+                      </ProductSize>
+                    </Details>
+                  </ProductDetail>
+                  <PriceDetail>
+                    <ProductAmountContainer>
+                      <Add />
+                      <ProductAmount>{p.quantity}</ProductAmount>
+                      <Remove />
+                    </ProductAmountContainer>
+                    <ProductPrice>$ {p.price * p.quantity}</ProductPrice>
+                  </PriceDetail>
+                </Product>
+              ))}
             </Info>
             <Summary>
               <SummaryTitle>ORDER SUMMARY</SummaryTitle>
               <SummaryItem>
                 <SummaryItemText>Subtotal</SummaryItemText>
-                <SummaryItemPrice>$ 95.00</SummaryItemPrice>
+                <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
               </SummaryItem>
               <SummaryItem>
                 <SummaryItemText>Estimated Shipping</SummaryItemText>
@@ -246,7 +229,7 @@ const Cart = () => {
               </SummaryItem>
               <SummaryItem type="total">
                 <SummaryItemText>Total</SummaryItemText>
-                <SummaryItemPrice>$ 95.00</SummaryItemPrice>
+                <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
               </SummaryItem>
               <Button>CHECKOUT NOW</Button>
             </Summary>
