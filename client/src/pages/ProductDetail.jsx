@@ -1,10 +1,10 @@
 import styled from "styled-components";
-
 import Layout from "../components/Layout";
-
 import { Add, Remove } from "@material-ui/icons";
-
 import { mobile } from "../responsive";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { publicRequest } from "../services/requestMethods";
 
 const Container = styled.div``;
 
@@ -115,48 +115,63 @@ const Button = styled.button`
 `;
 
 const ProductDetail = () => {
+  const location = useLocation();
+  const productId = location.pathname.split("/")[2];
+
+  const [product, setProduct] = useState({});
+  const [quantity, setQuantity] = useState(1)
+  const [color, setColor] = useState("")
+  const [size, setSize] = useState("")
+
+  const handleQuantity = (type) => {
+    if (type === "dec"){
+      setQuantity(prev => prev > 1 ? prev - 1 : 1)
+    }else {
+      setQuantity(prev => prev + 1)
+    }
+  }
+
+  useEffect(() => {
+    const getProduct = async () => {
+      try {
+        const res = await publicRequest.get(`products/${productId}`);
+        setProduct(res.data);
+        console.log("res.data: ", res.data);
+      } catch (err) {}
+    };
+    getProduct();
+  }, [productId]);
+
   return (
     <Container>
       <Layout>
         <Wrapper>
           <ImgContainer>
-            <Image src="https://lp2.hm.com/hmgoepprod?set=quality%5B79%5D%2Csource%5B%2Fed%2F1e%2Fed1ef32ecff4edffa7cf7bc86bb0ba3d257db336.jpg%5D%2Corigin%5Bdam%5D%2Ccategory%5B%5D%2Ctype%5BLOOKBOOK%5D%2Cres%5Bm%5D%2Chmver%5B1%5D&call=url[file:/product/main]" />
+            <Image src={product.img} />
           </ImgContainer>
           <InfoContainer>
-            <Title>Denim Jacket</Title>
+            <Title>{product.title}</Title>
             <Desc>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat
-              nulla pariatur. Excepteur sint occaecat cupidatat non proident,
-              sunt in culpa qui officia deserunt mollit anim id est laborum.
+             {product.description}
             </Desc>
-            <Price>$20</Price>
+            <Price>{`${product.price}`}</Price>
             <FilterContainer>
               <Filter>
                 <FilterTitle>Color</FilterTitle>
-                <FilterColor color="black"></FilterColor>
-                <FilterColor color="darkblue"></FilterColor>
-                <FilterColor color="gray"></FilterColor>
+                {product.color?.map(c => <FilterColor key={c} color={c} onClick={() => setColor(c)}></FilterColor>)}
               </Filter>
               <Filter>
                 <FilterTitle>Size</FilterTitle>
-                <FilterSize>
-                  <FilterSizeOption>XS</FilterSizeOption>
-                  <FilterSizeOption>S</FilterSizeOption>
-                  <FilterSizeOption>M</FilterSizeOption>
-                  <FilterSizeOption>L</FilterSizeOption>
-                  <FilterSizeOption>XL</FilterSizeOption>
+                <FilterSize onChange={(e) => setSize(e.target.value)}>
+                  {product.size?.map(s => <FilterSizeOption key={s}>{s}</FilterSizeOption>)}
                 </FilterSize>
               </Filter>
             </FilterContainer>
             <AddContainer>
               <AmountContainer>
-                <Remove />
-                <Amount>1</Amount>
-                <Add />
+                <Remove onClick={() => handleQuantity("dec")}/>
+                <Amount>{quantity}</Amount>
+                <Add onClick={() => handleQuantity("inc")}/>
               </AmountContainer>
               <Button>ADD TO CART</Button>
             </AddContainer>
